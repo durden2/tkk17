@@ -36,29 +36,83 @@ public class Parser
         }
     }
 
+    private void checkIfSpace() {
+        /*if (Character.isWhitespace(this.value().charAt(0))) {
+            this.forward();
+            checkIfSpace();
+        }*/
+    }
+
+    private Node tempNode;
+
+    private void setTempNode(Node temp) {
+        this.tempNode = temp;
+    }
+
+    private Node getTempNode() {
+        return this.tempNode;
+    }
+
     private Node parseNumber()
     {
+        checkIfSpace();
         this.expect(TokenType.NUM);
         String value = this.value();
         this.forward();
+        if (check(TokenType.NUM)) {
+            value = value + this.value();
+            this.forward();
+        }
         return new NodeNumber(value);
     }
 
-    private Node parseTerm()
+    private Node parseTerm(Node rightLeaf)
     {
-        Node left = this.parseNumber();
-        if (this.check(TokenType.MUL)) {
-            this.forward();
-            Node right = this.parseTerm();
-            return new NodeMul(left, right);
-        } else {
+        if (rightLeaf == null) {
+            Node left = this.parseNumber();
+            if (this.check(TokenType.MUL)) {
+                this.forward();
+                Node right = new NodeNumber(this.value());
+                this.forward();
+                Node tempNode = new NodeDiv(left, right);
+                setTempNode(tempNode);
+                this.parseTerm(tempNode);
+                return getTempNode();
+            } else if (this.check(TokenType.DIV)) {
+                this.forward();
+                Node right = new NodeNumber(this.value());
+                this.forward();
+                Node tempNode = new NodeDiv(left, right);
+                setTempNode(tempNode);
+                this.parseTerm(tempNode);
+                return getTempNode();
+            }
             return left;
+        } else {
+            if (this.check(TokenType.MUL)) {
+                this.forward();
+                String t = this.value();
+                this.forward();
+                Node tempNode = new NodeMul(new NodeNumber(t), rightLeaf);
+                setTempNode(tempNode);
+                this.parseTerm(tempNode);
+                return getTempNode();
+            } else if (this.check(TokenType.DIV)) {
+                this.forward();
+                String t = this.value();
+                this.forward();
+                Node tempNode = new NodeDiv(new NodeNumber(t), rightLeaf);
+                setTempNode(tempNode);
+                this.parseTerm(tempNode);
+                return getTempNode();
+            }
         }
+        return rightLeaf;
     }
 
     private Node parseExpression()
     {
-        Node left = this.parseTerm();
+        Node left = this.parseTerm(null);
         if (this.check(TokenType.ADD)) {
             this.forward();
             Node right = this.parseExpression();
