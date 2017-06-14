@@ -36,26 +36,6 @@ public class RpnEvaluatorVisitor implements NodeVisitor
         this.stack.push(c);
     }
 
-    public void visit(NodeSub node)
-    {
-        node.getLeft().accept(this);
-        node.getRight().accept(this);
-        Integer a = this.stack.pop();
-        Integer b = this.stack.pop();
-        Integer c = b - a;
-        this.stack.push(c);
-    }
-
-    public void visit(NodeDiv node)
-    {
-        node.getLeft().accept(this);
-        node.getRight().accept(this);
-        Integer a = this.stack.pop();
-        Integer b = this.stack.pop();
-        Integer c = b / a;
-        this.stack.push(c);
-    }
-
     public void visit(NodeNumber node)
     {
         String value = node.getValue();
